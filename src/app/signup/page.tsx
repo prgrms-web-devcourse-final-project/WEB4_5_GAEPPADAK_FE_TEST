@@ -2,6 +2,7 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import SignupForm from "@/components/SignupForm";
+import { authService } from "@/services/auth.service";
 
 const Signup: NextPage = () => {
   const handleSignup = async (
@@ -11,23 +12,15 @@ const Signup: NextPage = () => {
     birthdate: string
   ) => {
     // 실제 회원가입 로직 구현
+
     try {
-      const response = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password, nickname, birthdate }),
+      await authService.signup({
+        email,
+        passwordHash: password,
+        nickname,
+        birthDate: birthdate,
       });
-
-      if (!response.ok) {
-        throw new Error("Signup failed");
-      }
-
-      const data = await response.json();
-      return data;
     } catch (error) {
-      console.error("Signup error:", error);
       throw error;
     }
   };
@@ -41,7 +34,7 @@ const Signup: NextPage = () => {
       </Head>
 
       <main>
-        <SignupForm />
+        <SignupForm onSignup={handleSignup} />
       </main>
     </>
   );
