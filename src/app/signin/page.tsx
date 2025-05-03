@@ -194,8 +194,8 @@ const SignIn: React.FC = () => {
           </div>
 
           <div className="flex items-center justify-center mt-4 p-2 border border-gray-300 rounded-md bg-gray-100">
-            <span className="font-semibold text-gray-500">
-              비밀번호를 잊으셨나요?{"\t"}
+            <span className="font-semibold text-gray-500 mr-2">
+              비밀번호를 잊으셨나요?
             </span>
             <a href="#" className="text-blue-500 hover:underline">
               비밀번호 초기화
