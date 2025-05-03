@@ -28,6 +28,15 @@ class AuthService {
     }
   }
 
+  async signout(): Promise<void> {
+    try {
+      await axiosInstance.post<void>("api/v1/auth/logout");
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
   async refreshToken(): Promise<void> {
     try {
       await axiosInstance.post<void>("api/v1/auth/refresh");
