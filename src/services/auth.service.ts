@@ -27,6 +27,15 @@ class AuthService {
       throw error;
     }
   }
+
+  async refreshToken(): Promise<void> {
+    try {
+      await axiosInstance.post<void>("/auth/refresh");
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
 }
 
 export const authService = new AuthService();
