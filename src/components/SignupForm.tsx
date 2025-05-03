@@ -38,7 +38,7 @@ const SignupForm: React.FC = () => {
         birthDate: birthdate,
       });
       // 회원가입 성공 후 로그인 페이지로 리다이렉트
-      router.push("/login");
+      router.push("/signin");
     } catch (err) {
       setError("회원가입에 실패했습니다. 다시 시도해주세요.");
       console.error(err);

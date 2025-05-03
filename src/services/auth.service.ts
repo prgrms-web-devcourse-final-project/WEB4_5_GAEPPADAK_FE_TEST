@@ -4,7 +4,7 @@ import { axiosInstance } from "./axios.instance";
 class AuthService {
   async signup(signupDto: IAuth.SignUpDto): Promise<IAuth.SignUpResponse> {
     const response = await axiosInstance.post<IAuth.SignUpResponse>(
-      "/auth/signup",
+      "api/v1/auth/signup",
       signupDto
     );
     try {
@@ -17,7 +17,7 @@ class AuthService {
 
   async signin(signinDto: IAuth.SignInDto): Promise<IAuth.SignInResponse> {
     const response = await axiosInstance.post<IAuth.SignInResponse>(
-      "/auth/signin",
+      "api/v1/auth/login",
       signinDto
     );
     try {
@@ -30,7 +30,7 @@ class AuthService {
 
   async refreshToken(): Promise<void> {
     try {
-      await axiosInstance.post<void>("/auth/refresh");
+      await axiosInstance.post<void>("api/v1/auth/refresh");
     } catch (error) {
       console.error(error);
       throw error;
