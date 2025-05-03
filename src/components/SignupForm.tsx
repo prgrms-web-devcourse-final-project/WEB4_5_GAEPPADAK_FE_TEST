@@ -3,17 +3,9 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { authService } from "@/services/auth.service";
 
-interface SignupFormProps {
-  onSignup: (
-    email: string,
-    password: string,
-    nickname: string,
-    birthdate: string
-  ) => Promise<void>;
-}
-
-const SignupForm: React.FC<SignupFormProps> = ({ onSignup }) => {
+const SignupForm: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nickname, setNickname] = useState("");
@@ -39,7 +31,12 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSignup }) => {
 
     try {
       setLoading(true);
-      await onSignup(email, password, nickname, birthdate);
+      await authService.signup({
+        email,
+        passwordHash: password,
+        nickname,
+        birthDate: birthdate,
+      });
       // 회원가입 성공 후 로그인 페이지로 리다이렉트
       router.push("/login");
     } catch (err) {
