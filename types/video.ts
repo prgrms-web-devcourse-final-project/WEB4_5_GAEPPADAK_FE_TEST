@@ -10,4 +10,16 @@ export namespace IVideo {
 
     platform: string;
   }
+
+  export namespace ISource {
+    export interface ISummary {
+      id: number;
+
+      url: string;
+
+      thumbnailUrl: string;
+
+      title: string;
+    }
+  }
 }

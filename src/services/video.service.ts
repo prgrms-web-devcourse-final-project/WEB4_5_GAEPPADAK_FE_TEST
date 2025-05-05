@@ -14,6 +14,18 @@ class VideoService {
       throw error;
     }
   }
+
+  async getSourceVideos(postId: number) {
+    try {
+      const response = await axiosInstance.get<
+        ApiResponse<IVideo.ISource.ISummary[]>
+      >(`/api/v1/posts/${postId}/videos`);
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
 }
 
 export const videoService = new VideoService();
