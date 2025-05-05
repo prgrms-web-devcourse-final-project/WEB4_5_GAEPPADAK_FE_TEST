@@ -9,8 +9,10 @@ import { keywordService } from "../services/keyword.service";
 import { INews, IVideo, IKeyword, IPost } from "../../types";
 
 // UI 컴포넌트 임포트
-import NavTab from "../components/ui/NavTab";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
+
+// 네비게이션 컴포넌트 임포트
+import Header from "../components/navigation/Header";
 
 // 카드 컴포넌트 임포트
 import PostCard from "../components/cards/PostCard";
@@ -22,7 +24,6 @@ export default function Home() {
   const [videos, setVideos] = useState<IVideo.ISummary[]>([]);
   const [keywords, setKeywords] = useState<IKeyword.ISummary[]>([]);
   const [posts, setPosts] = useState<IPost.ISummary[]>([]);
-  const [activeTab, setActiveTab] = useState("home");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,6 +42,26 @@ export default function Home() {
         setVideos(videosRes.data.list);
         setKeywords(keywordsRes.data);
         // setPosts(postsRes.data);
+
+        // 임시 포스트 데이터 (포스트 API가 활성화될 때까지 사용)
+        setPosts([
+          {
+            postId: 1,
+            keyword: "키워드1",
+            title: "샘플 포스트 제목 1",
+            summary:
+              "이것은 샘플 포스트의 요약입니다. API가 연결되면 실제 데이터로 대체됩니다.",
+            thumbnailUrl: "/placeholder.jpg",
+          },
+          {
+            postId: 2,
+            keyword: "키워드2",
+            title: "샘플 포스트 제목 2",
+            summary:
+              "두 번째 샘플 포스트입니다. 실제 API 연동 시 이 데이터는 제거될 예정입니다.",
+            thumbnailUrl: "/placeholder.jpg",
+          },
+        ]);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -53,43 +74,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* 내비게이션 헤더 */}
-      <header className="sticky top-0 z-50 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-8">
-              <Link href="/" className="text-2xl font-bold text-blue-600">
-                메인 화면
-              </Link>
-              <nav className="flex space-x-1">
-                <NavTab
-                  label="홈"
-                  active={activeTab === "home"}
-                  onClick={() => setActiveTab("home")}
-                />
-                <NavTab
-                  label="인기 뉴스"
-                  active={activeTab === "news"}
-                  onClick={() => setActiveTab("news")}
-                />
-                <NavTab
-                  label="인기 유튜브"
-                  active={activeTab === "video"}
-                  onClick={() => setActiveTab("video")}
-                />
-              </nav>
-            </div>
-            <div className="flex items-center space-x-3">
-              <button className="px-4 py-2 rounded-full text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
-                회원가입
-              </button>
-              <button className="px-4 py-2 rounded-full text-sm text-white bg-blue-600 hover:bg-blue-700">
-                로그인
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* 글로벌 헤더 컴포넌트 사용 */}
+      <Header initialActiveTab="home" />
 
       <main className="container mx-auto px-6 py-8">
         {loading ? (
