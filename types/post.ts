@@ -10,4 +10,14 @@ export namespace IPost {
   }
 
   export interface ISummary extends IBase {}
+
+  export class GetListQueryDto {
+    keyword!: string;
+
+    page: number = 1;
+
+    size: number = 10;
+
+    sort: "createdAt" | "viewCount" = "createdAt";
+  }
 }
