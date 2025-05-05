@@ -98,7 +98,9 @@ export default function Home() {
                 </h2>
                 <div className="space-y-4">
                   {posts.slice(0, 5).map((post, index) => (
-                    <PostCard key={post.postId} post={post} index={index} />
+                    <Link href={`/posts/${post.postId}`} key={post.postId}>
+                      <PostCard post={post} index={index} />
+                    </Link>
                   ))}
                 </div>
               </section>
@@ -159,26 +161,28 @@ export default function Home() {
                   </h2>
                   <div className="space-y-4">
                     {keywords.slice(0, 10).map((keyword, index) => (
-                      <div
+                      <Link
+                        href={`/keywords/${keyword.keywordId}`}
                         key={keyword.keywordId}
-                        className="flex items-center"
                       >
-                        <span className="w-6 text-sm text-gray-500 dark:text-gray-400">
-                          {index + 1}
-                        </span>
-                        <span className="flex-1 font-medium text-gray-900 dark:text-white">
-                          {keyword.text}
-                        </span>
-                        <span
-                          className={`text-xs px-2 py-1 rounded-full ${
-                            keyword.score > 80
-                              ? "bg-red-100 text-red-700"
-                              : "bg-gray-100 text-gray-700"
-                          }`}
-                        >
-                          {keyword.score}
-                        </span>
-                      </div>
+                        <div className="flex items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-md transition-colors">
+                          <span className="w-6 text-sm text-gray-500 dark:text-gray-400">
+                            {index + 1}
+                          </span>
+                          <span className="flex-1 font-medium text-gray-900 dark:text-white">
+                            {keyword.text}
+                          </span>
+                          <span
+                            className={`text-xs px-2 py-1 rounded-full ${
+                              keyword.score > 80
+                                ? "bg-red-100 text-red-700"
+                                : "bg-gray-100 text-gray-700"
+                            }`}
+                          >
+                            {keyword.score}
+                          </span>
+                        </div>
+                      </Link>
                     ))}
                   </div>
                 </div>
@@ -220,7 +224,7 @@ const LoadingSpinner = () => (
 );
 
 const PostCard = ({ post, index }: { post: IPost.ISummary; index: number }) => (
-  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
+  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
     <div className="p-6 flex gap-6">
       <div className="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center flex-shrink-0">
         <Image
@@ -241,7 +245,10 @@ const PostCard = ({ post, index }: { post: IPost.ISummary; index: number }) => (
         <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">
           {post.summary}
         </p>
-        <button className="px-4 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors">
+        <button
+          className="px-4 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
+          onClick={(e) => e.stopPropagation()}
+        >
           채팅방 키워드
         </button>
       </div>
