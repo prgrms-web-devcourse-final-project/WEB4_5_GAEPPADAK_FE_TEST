@@ -5,10 +5,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { keywordService } from "@/src/services/keyword.service";
 import { IKeyword } from "@/types";
+import { useRouter } from "next/navigation";
 
 export default function KeywordSidebar() {
   const [keywords, setKeywords] = useState<IKeyword.ISummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchKeywords = async () => {
@@ -50,7 +52,13 @@ export default function KeywordSidebar() {
       </h2>
       <div className="space-y-4">
         {keywords.slice(0, 10).map((keyword, index) => (
-          <div key={keyword.keywordId} className="flex items-center">
+          <div
+            onClick={() => {
+              router.push(`/main/keywords/${keyword.keywordId}`);
+            }}
+            key={keyword.keywordId}
+            className="flex items-center"
+          >
             <span className="w-6 text-sm text-gray-500 dark:text-gray-400">
               {index + 1}
             </span>
