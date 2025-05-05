@@ -22,18 +22,24 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log("fetch start");
         setLoading(true);
-        const [newsRes, videosRes, keywordsRes, postsRes] = await Promise.all([
+        const [
+          newsRes,
+          videosRes,
+          keywordsRes,
+          //  postsRes
+        ] = await Promise.all([
           newsService.getTop10Summary(),
           videoService.getTop10Summary(),
           keywordService.getTop10Summary(),
-          postService.getTop10Summary(),
+          // postService.getTop10Summary(),
         ]);
 
-        setNews(newsRes.data);
-        setVideos(videosRes.data);
+        setNews(newsRes.data.list);
+        setVideos(videosRes.data.list);
         setKeywords(keywordsRes.data);
-        setPosts(postsRes.data);
+        // setPosts(postsRes.data);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
