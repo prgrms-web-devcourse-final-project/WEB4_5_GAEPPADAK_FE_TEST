@@ -15,9 +15,6 @@ import PostCard from "../../components/cards/PostCard";
 import NewsCard from "../../components/cards/NewsCard";
 import VideoCard from "../../components/cards/VideoCard";
 
-// 레이아웃 컴포넌트 임포트
-import MainLayout from "../../components/layouts/MainLayout";
-
 export default function Home() {
   const [news, setNews] = useState<INews.ISummary[]>([]);
   const [videos, setVideos] = useState<IVideo.ISummary[]>([]);
@@ -71,64 +68,7 @@ export default function Home() {
   }
 
   return (
-    // <MainLayout activeTab="home">
-    //   {/* 실시간 포스트 리스트 섹션 */}
-
-    // </MainLayout>
-
     <>
-      <section className="mb-12">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-          실시간 포스트 리스트
-        </h2>
-        <div className="space-y-4">
-          {posts.slice(0, 5).map((post, index) => (
-            <Link href={`/posts/${post.postId}`} key={post.postId}>
-              <PostCard post={post} index={index} />
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* 인기 뉴스 섹션 */}
-      <section className="mb-12">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-            인기 뉴스
-          </h2>
-          <Link
-            href="/news"
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-          >
-            전체보기 버튼
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {news.slice(0, 5).map((newsItem, index) => (
-            <NewsCard key={index} news={newsItem} />
-          ))}
-        </div>
-      </section>
-
-      {/* 인기 유튜브 섹션 */}
-      <section>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-            인기 유튜브
-          </h2>
-          <Link
-            href="/videos"
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-          >
-            전체보기 버튼
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {videos.slice(0, 5).map((video, index) => (
-            <VideoCard key={index} video={video} />
-          ))}
-        </div>
-      </section>
       <section className="mb-12">
         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
           실시간 포스트 리스트
