@@ -38,12 +38,12 @@ export const Header: React.FC<HeaderProps> = ({
             </nav>
           </div>
           <div className="flex items-center space-x-3">
-            <Link href="/signup">
+            <Link href="/auth/signup">
               <button className="px-4 py-2 rounded-full text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
                 회원가입
               </button>
             </Link>
-            <Link href="/signin">
+            <Link href="/auth/signin">
               <button className="px-4 py-2 rounded-full text-sm text-white bg-blue-600 hover:bg-blue-700">
                 로그인
               </button>

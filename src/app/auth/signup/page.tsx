@@ -1,9 +1,10 @@
-// pages/signup.tsx
-import type { NextPage } from "next";
+"use client";
+
+// pages/auth/signup.tsx
 import Head from "next/head";
 import SignupForm from "@/components/SignupForm";
 
-const Signup: NextPage = () => {
+export default function Signup() {
   return (
     <>
       <Head>
@@ -17,6 +18,4 @@ const Signup: NextPage = () => {
       </main>
     </>
   );
-};
-
-export default Signup;
+}
