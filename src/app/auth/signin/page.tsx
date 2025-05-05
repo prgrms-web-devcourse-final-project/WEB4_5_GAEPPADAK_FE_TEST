@@ -1,12 +1,12 @@
 "use client";
 
-// pages/signin.tsx
+// pages/auth/signin.tsx
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { authService } from "../../services/auth.service";
-import { IAuth } from "../../../types";
+import { authService } from "../../../services/auth.service";
+import { IAuth } from "../../../../types";
 
 const SignIn: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -207,7 +207,7 @@ const SignIn: React.FC = () => {
           <p className="text-sm text-gray-600">
             Don&apos;t have an account?{" "}
             <Link
-              href="/signup"
+              href="/auth/signup"
               className="font-medium text-indigo-600 hover:text-indigo-500"
             >
               Sign up now
