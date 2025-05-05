@@ -2,18 +2,18 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { newsService } from "../../services/news.service";
-import { videoService } from "../../services/video.service";
-// import { postService } from "../services/post.service";
-import { INews, IVideo, IPost } from "../../../types";
+import { newsService } from "@src/services/news.service";
+import { videoService } from "@src/services/video.service";
+import { postService } from "@src/services/post.service";
+import { INews, IVideo, IPost } from "@/types";
 
 // UI 컴포넌트 임포트
-import LoadingSpinner from "../../components/ui/LoadingSpinner";
+import LoadingSpinner from "@src/components/ui/LoadingSpinner";
 
 // 카드 컴포넌트 임포트
-import PostCard from "../../components/cards/PostCard";
-import NewsCard from "../../components/cards/NewsCard";
-import VideoCard from "../../components/cards/VideoCard";
+import PostCard from "@src/components/cards/PostCard";
+import NewsCard from "@src/components/cards/NewsCard";
+import VideoCard from "@src/components/cards/VideoCard";
 
 export default function Home() {
   const [news, setNews] = useState<INews.ISummary[]>([]);
@@ -25,34 +25,15 @@ export default function Home() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [newsRes, videosRes] = await Promise.all([
+        const [newsRes, videosRes, postsRes] = await Promise.all([
           newsService.getTop10Summary(),
           videoService.getTop10Summary(),
-          // postService.getTop10Summary(),
+          postService.getTop10Summary(),
         ]);
 
         setNews(newsRes.data.list);
         setVideos(videosRes.data.list);
-
-        // 임시 포스트 데이터 (포스트 API가 활성화될 때까지 사용)
-        setPosts([
-          {
-            postId: 1,
-            keyword: "키워드1",
-            title: "샘플 포스트 제목 1",
-            summary:
-              "이것은 샘플 포스트의 요약입니다. API가 연결되면 실제 데이터로 대체됩니다.",
-            thumbnailUrl: "/placeholder.jpg",
-          },
-          {
-            postId: 2,
-            keyword: "키워드2",
-            title: "샘플 포스트 제목 2",
-            summary:
-              "두 번째 샘플 포스트입니다. 실제 API 연동 시 이 데이터는 제거될 예정입니다.",
-            thumbnailUrl: "/placeholder.jpg",
-          },
-        ]);
+        setPosts(postsRes.data);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {

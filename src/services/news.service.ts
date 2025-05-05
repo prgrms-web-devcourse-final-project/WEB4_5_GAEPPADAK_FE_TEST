@@ -14,6 +14,18 @@ class NewsService {
       throw error;
     }
   }
+
+  async getSourceNews(postId: number) {
+    try {
+      const response = await axiosInstance.get<
+        ApiResponse<INews.ISource.ISummary[]>
+      >(`/api/v1/posts/${postId}/news`);
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
 }
 
 export const newsService = new NewsService();

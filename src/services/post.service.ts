@@ -14,6 +14,18 @@ class PostService {
       throw error;
     }
   }
+
+  async getDetail(postId: number) {
+    try {
+      const response = await axiosInstance.get<ApiResponse<IPost>>(
+        `api/v1/posts/${postId}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
 }
 
 export const postService = new PostService();
