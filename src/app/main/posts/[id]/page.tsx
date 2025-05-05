@@ -25,7 +25,7 @@ interface CommentData {
 
 export default function PostDetailPage() {
   const params = useParams();
-  const [post, setPost] = useState<IPost.IDetail | null>(null);
+  const [post, setPost] = useState<IPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState<CommentData[]>([]);
