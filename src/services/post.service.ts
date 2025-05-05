@@ -33,7 +33,7 @@ class PostService {
       const response = await axiosInstance.get<
         ApiResponse<IPost.ISummary[]>,
         AxiosResponse<ApiResponse<IPost.ISummary[]>>
-      >(`/api/v1/keywords/search?keyword=${query.keyword}`, {
+      >(`/api/v1/keywords/search`, {
         params: query,
       });
       return response.data;
