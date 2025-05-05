@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Link from "next/link";
-import NavTab from "@/components/ui/NavTab";
+import NavTab from "@src/components/ui/NavTab";
 
 interface HeaderProps {
   initialActiveTab?: string;

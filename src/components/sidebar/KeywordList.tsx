@@ -1,65 +1,74 @@
-import React from "react";
+// components/KeywordSidebar.tsx
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { IKeyword } from "../../../types";
+import { keywordService } from "@/src/services/keyword.service";
+import { IKeyword } from "@/types";
 
-interface KeywordListProps {
-  keywords: IKeyword.ISummary[];
-  title?: string;
-  showMoreLink?: boolean;
-  maxItems?: number;
-}
+export default function KeywordSidebar() {
+  const [keywords, setKeywords] = useState<IKeyword.ISummary[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export const KeywordList: React.FC<KeywordListProps> = ({
-  keywords,
-  title = "실시간 키워드",
-  showMoreLink = true,
-  maxItems = 10,
-}) => {
-  return (
-    <div className="w-80 hidden lg:block">
-      <div className="sticky top-24">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center justify-between">
-            {title}
-            {showMoreLink && (
-              <Link
-                href="/keywords"
-                className="text-sm text-blue-600 hover:text-blue-700"
-              >
-                더보기
-              </Link>
-            )}
-          </h2>
-          <div className="space-y-4">
-            {keywords.slice(0, maxItems).map((keyword, index) => (
-              <Link
-                href={`/keywords/${keyword.keywordId}`}
-                key={keyword.keywordId}
-              >
-                <div className="flex items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-md transition-colors">
-                  <span className="w-6 text-sm text-gray-500 dark:text-gray-400">
-                    {index + 1}
-                  </span>
-                  <span className="flex-1 font-medium text-gray-900 dark:text-white">
-                    {keyword.text}
-                  </span>
-                  <span
-                    className={`text-xs px-2 py-1 rounded-full ${
-                      keyword.score > 80
-                        ? "bg-red-100 text-red-700"
-                        : "bg-gray-100 text-gray-700"
-                    }`}
-                  >
-                    {keyword.score}
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
+  useEffect(() => {
+    const fetchKeywords = async () => {
+      try {
+        const response = await keywordService.getTop10Summary();
+        setKeywords(response.data);
+      } catch (error) {
+        console.error("Error fetching keywords:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchKeywords();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+        <div className="animate-pulse space-y-4">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div key={i} className="h-4 bg-gray-200 rounded" />
+          ))}
         </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+      <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center justify-between">
+        실시간 키워드
+        <Link
+          href="/keywords"
+          className="text-sm text-blue-600 hover:text-blue-700"
+        >
+          더보기
+        </Link>
+      </h2>
+      <div className="space-y-4">
+        {keywords.slice(0, 10).map((keyword, index) => (
+          <div key={keyword.keywordId} className="flex items-center">
+            <span className="w-6 text-sm text-gray-500 dark:text-gray-400">
+              {index + 1}
+            </span>
+            <span className="flex-1 font-medium text-gray-900 dark:text-white">
+              {keyword.text}
+            </span>
+            <span
+              className={`text-xs px-2 py-1 rounded-full ${
+                keyword.score > 80
+                  ? "bg-red-100 text-red-700"
+                  : "bg-gray-100 text-gray-700"
+              }`}
+            >
+              {keyword.score}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );
-};
-
-export default KeywordList;
+}
