@@ -16,7 +16,7 @@ export default function PopularNewsPage() {
   const [newsLoading, setNewsLoading] = useState(true);
   const [videoLoading, setVideoLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(4);
+  const [totalPages, setTotalPages] = useState(1);
 
   // 뉴스 데이터 가져오기
   useEffect(() => {
@@ -29,6 +29,18 @@ export default function PopularNewsPage() {
         });
 
         setNewsList(response.data.list || []);
+
+        // API 응답에서 totalPages 가져오기
+        if (
+          response.data &&
+          response.data.meta &&
+          response.data.meta.totalPages
+        ) {
+          setTotalPages(response.data.meta.totalPages);
+        } else {
+          // 페이지 정보가 없는 경우 기본값 설정
+          setTotalPages(1);
+        }
       } catch (error) {
         console.error("인기 뉴스 로딩 중 오류 발생:", error);
         setNewsList([]);
@@ -72,6 +84,134 @@ export default function PopularNewsPage() {
     const minutes = String(date.getMinutes()).padStart(2, "0");
 
     return `${year}.${month}.${day} ${hours}:${minutes}`;
+  };
+
+  // 페이지네이션 렌더링 함수 - 페이지 수가 많을 때 줄임 표시 추가
+  const renderPagination = () => {
+    // 화면에 표시할 페이지 버튼 최대 개수
+    const maxPageButtons = 5;
+    let pagesToRender = [];
+
+    if (totalPages <= maxPageButtons) {
+      // 전체 페이지 수가 최대 표시 개수보다 적으면 모든 페이지 표시
+      pagesToRender = Array.from({ length: totalPages }, (_, i) => i + 1);
+    } else {
+      // 전체 페이지가 많은 경우 현재 페이지 주변과 첫/마지막 페이지만 표시
+      if (currentPage <= 3) {
+        // 현재 페이지가 앞쪽인 경우: 1, 2, 3, 4, ... N
+        pagesToRender = [1, 2, 3, 4, null, totalPages];
+      } else if (currentPage >= totalPages - 2) {
+        // 현재 페이지가 뒤쪽인 경우: 1, ... N-3, N-2, N-1, N
+        pagesToRender = [
+          1,
+          null,
+          totalPages - 3,
+          totalPages - 2,
+          totalPages - 1,
+          totalPages,
+        ];
+      } else {
+        // 현재 페이지가 중간인 경우: 1, ... P-1, P, P+1, ... N
+        pagesToRender = [
+          1,
+          null,
+          currentPage - 1,
+          currentPage,
+          currentPage + 1,
+          null,
+          totalPages,
+        ];
+      }
+    }
+
+    return (
+      <div className="flex justify-center mt-10 mb-12">
+        <nav className="inline-flex rounded-md shadow-sm -space-x-px overflow-hidden">
+          {/* 이전 페이지 버튼 */}
+          <button
+            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+            className={`px-3 py-2 ${
+              currentPage === 1
+                ? "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
+                : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            } text-sm border border-gray-200 dark:border-gray-700`}
+          >
+            <span className="sr-only">이전</span>
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+
+          {/* 페이지 버튼들 */}
+          {pagesToRender.map((page, index) => {
+            if (page === null) {
+              // 줄임표 표시
+              return (
+                <span
+                  key={`ellipsis-${index}`}
+                  className="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 flex items-center justify-center"
+                >
+                  ...
+                </span>
+              );
+            }
+
+            return (
+              <button
+                key={`page-${page}`}
+                onClick={() => setCurrentPage(page)}
+                className={`px-4 py-2 ${
+                  currentPage === page
+                    ? "bg-blue-500 text-white dark:bg-blue-600"
+                    : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                } text-sm border border-gray-200 dark:border-gray-700`}
+              >
+                {page}
+              </button>
+            );
+          })}
+
+          {/* 다음 페이지 버튼 */}
+          <button
+            onClick={() =>
+              setCurrentPage(Math.min(totalPages, currentPage + 1))
+            }
+            disabled={currentPage === totalPages}
+            className={`px-3 py-2 ${
+              currentPage === totalPages
+                ? "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
+                : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            } text-sm border border-gray-200 dark:border-gray-700`}
+          >
+            <span className="sr-only">다음</span>
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+        </nav>
+      </div>
+    );
   };
 
   if (newsLoading) {
@@ -180,77 +320,7 @@ export default function PopularNewsPage() {
       </div>
 
       {/* 페이지네이션 - 뉴스가 있을 때만 표시 */}
-      {newsList.length > 0 && (
-        <div className="flex justify-center mt-10 mb-12">
-          <nav className="inline-flex rounded-md shadow-sm -space-x-px overflow-hidden">
-            <button
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-              className={`px-3 py-2 ${
-                currentPage === 1
-                  ? "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
-                  : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-              } text-sm border border-gray-200 dark:border-gray-700`}
-            >
-              <span className="sr-only">이전</span>
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-            </button>
-
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`px-4 py-2 ${
-                  currentPage === page
-                    ? "bg-blue-500 text-white dark:bg-blue-600"
-                    : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                } text-sm border border-gray-200 dark:border-gray-700`}
-              >
-                {page}
-              </button>
-            ))}
-
-            <button
-              onClick={() =>
-                setCurrentPage(Math.min(totalPages, currentPage + 1))
-              }
-              disabled={currentPage === totalPages}
-              className={`px-3 py-2 ${
-                currentPage === totalPages
-                  ? "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
-                  : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-              } text-sm border border-gray-200 dark:border-gray-700`}
-            >
-              <span className="sr-only">다음</span>
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </button>
-          </nav>
-        </div>
-      )}
+      {newsList.length > 0 && renderPagination()}
 
       {/* 하단 관련 유튜브 섹션 */}
       <div className="mt-12 pt-6 border-t border-gray-200 dark:border-gray-700">
