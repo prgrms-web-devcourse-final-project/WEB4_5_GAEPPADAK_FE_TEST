@@ -2,6 +2,13 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { IVideo } from "../../../types";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import "dayjs/locale/ko";
+
+// dayjs 설정
+dayjs.extend(relativeTime);
+dayjs.locale("ko");
 
 interface VideoCardProps {
   video: IVideo.ISummary;
@@ -59,6 +66,11 @@ export const VideoCard: React.FC<VideoCardProps> = ({ video }) => (
       <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
         {video.title}
       </h3>
+      {video.publishedAt && (
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          {dayjs(video.publishedAt).fromNow()}
+        </p>
+      )}
     </div>
   </Link>
 );
