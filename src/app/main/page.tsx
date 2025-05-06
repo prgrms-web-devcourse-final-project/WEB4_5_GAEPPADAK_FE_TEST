@@ -56,7 +56,7 @@ export default function Home() {
         </h2>
         <div className="space-y-4">
           {posts.slice(0, 5).map((post, index) => (
-            <Link href={`/posts/${post.postId}`} key={post.postId}>
+            <Link href={`main/posts/${post.postId}`} key={post.postId}>
               <PostCard post={post} index={index} />
             </Link>
           ))}
