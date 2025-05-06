@@ -15,6 +15,20 @@ class NewsService {
     }
   }
 
+  async getPopularNews(query: INews.GetListQueryDto) {
+    try {
+      const response = await axiosInstance.get<
+        ApiResponse<IPagination.IOffset<INews.ISummary[]>>
+      >("/api/v1/news/top", {
+        params: query,
+      });
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
   async getSourceNews(postId: number) {
     try {
       const response = await axiosInstance.get<

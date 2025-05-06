@@ -15,6 +15,20 @@ class VideoService {
     }
   }
 
+  async getPopularVideos(query: IVideo.GetListQueryDto) {
+    try {
+      const response = await axiosInstance.get<
+        ApiResponse<IPagination.IOffset<IVideo.ISummary[]>>
+      >("/api/v1/videos/top", {
+        params: query,
+      });
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
   async getSourceVideos(postId: number) {
     try {
       const response = await axiosInstance.get<

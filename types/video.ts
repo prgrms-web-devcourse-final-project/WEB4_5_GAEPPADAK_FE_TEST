@@ -1,3 +1,5 @@
+import { IPagination } from "./common";
+
 export namespace IVideo {
   export interface ISummary {
     url: string;
@@ -22,4 +24,6 @@ export namespace IVideo {
       title: string;
     }
   }
+
+  export class GetListQueryDto extends IPagination.OffsetQueryDto {}
 }
