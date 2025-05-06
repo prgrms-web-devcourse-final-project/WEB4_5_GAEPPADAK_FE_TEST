@@ -54,7 +54,7 @@ export default function KeywordSidebar() {
         {keywords.slice(0, 10).map((keyword, index) => (
           <div
             onClick={() => {
-              router.push(`/main/keywords/${keyword.keywordId}`);
+              router.push(`/main/keywords/${keyword.text}`);
             }}
             key={keyword.keywordId}
             className="flex items-center"

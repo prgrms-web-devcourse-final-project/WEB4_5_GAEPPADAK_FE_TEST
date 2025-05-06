@@ -20,6 +20,16 @@ export namespace INews {
       thumbnailUrl: string;
 
       title: string;
+
+      platform: "YOUTUBE" | "NAVER_NEWS";
+    }
+
+    export class GetMixedListQueryDto {
+      keyword!: string;
+
+      page: number = 1;
+
+      size: number = 10;
     }
   }
 }

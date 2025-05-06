@@ -1,3 +1,4 @@
+import { AxiosResponse } from "axios";
 import { ApiResponse, IPost } from "../../types";
 import { axiosInstance } from "./axios.instance";
 
@@ -20,6 +21,21 @@ class PostService {
       const response = await axiosInstance.get<ApiResponse<IPost>>(
         `api/v1/posts/${postId}`
       );
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  async getList(query: IPost.GetListQueryDto) {
+    try {
+      const response = await axiosInstance.get<
+        ApiResponse<IPost.ISummary[]>,
+        AxiosResponse<ApiResponse<IPost.ISummary[]>>
+      >(`/api/v1/posts/search`, {
+        params: query,
+      });
       return response.data;
     } catch (error) {
       console.error(error);
