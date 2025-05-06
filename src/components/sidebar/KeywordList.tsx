@@ -2,7 +2,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { keywordService } from "@/src/services/keyword.service";
 import { IKeyword } from "@/types";
 import { useRouter } from "next/navigation";
@@ -41,14 +40,8 @@ export default function KeywordSidebar() {
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-      <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center justify-between">
+      <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
         실시간 키워드
-        <Link
-          href="/keywords"
-          className="text-sm text-blue-600 hover:text-blue-700"
-        >
-          더보기
-        </Link>
       </h2>
       <div className="space-y-4">
         {keywords.slice(0, 10).map((keyword, index) => (

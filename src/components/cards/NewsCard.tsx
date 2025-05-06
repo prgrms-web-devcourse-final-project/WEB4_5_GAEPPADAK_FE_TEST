@@ -46,11 +46,8 @@ export const NewsCard: React.FC<NewsCardProps> = ({ news }) => (
         {news.title}
       </h3>
       <div className="text-sm text-gray-600 dark:text-gray-400">
-        AI로 짜여진 첫번째 키워드에 대한 내용...
+        {news.summary}
       </div>
-      <button className="mt-3 px-4 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors">
-        첫번째 키워드
-      </button>
     </div>
   </Link>
 );

@@ -58,7 +58,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post, index }) => {
               router.push(`/main/posts/${post.postId}`);
             }}
           >
-            채팅방 키워드
+            {post.keyword}
           </button>
         </div>
       </div>
