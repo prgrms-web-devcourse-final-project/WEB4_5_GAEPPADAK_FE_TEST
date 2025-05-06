@@ -11,15 +11,12 @@ import { IPost } from "@/types";
 import { INews } from "@/types/news";
 import LoadingSpinner from "@src/components/ui/LoadingSpinner";
 
-type TabType = "home" | "news" | "youtube";
-
 export default function KeywordDetailPage() {
   const params = useParams();
   const keyword = decodeURIComponent(params.keyword as string);
 
   const [posts, setPosts] = useState<IPost.ISummary[]>([]);
   const [newsItems, setNewsItems] = useState<INews.ISource.ISummary[]>([]);
-  const [activeTab, setActiveTab] = useState<TabType>("home");
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(4);
@@ -36,7 +33,7 @@ export default function KeywordDetailPage() {
         });
 
         if (postsResponse && postsResponse.code === "SUCCESS") {
-          setPosts(postsResponse.data);
+          setPosts(postsResponse.data || []);
         }
 
         const newsResponse = await newsService.getSourceNewsList({
@@ -46,10 +43,13 @@ export default function KeywordDetailPage() {
         });
 
         if (newsResponse && newsResponse.code === "SUCCESS") {
-          setNewsItems(newsResponse.data);
+          setNewsItems(newsResponse.data || []);
         }
       } catch (error) {
         console.error("데이터 로드 중 오류 발생:", error);
+        // 오류 발생 시 빈 배열로 설정
+        setPosts([]);
+        setNewsItems([]);
       } finally {
         setLoading(false);
       }
@@ -57,10 +57,6 @@ export default function KeywordDetailPage() {
 
     fetchData();
   }, [keyword, currentPage]);
-
-  const handleTabChange = (tab: TabType) => {
-    setActiveTab(tab);
-  };
 
   if (loading) {
     return <LoadingSpinner />;
@@ -77,10 +73,11 @@ export default function KeywordDetailPage() {
         </div>
       </div>
 
-      {/* 홈 탭 - 포스트 목록 */}
-      {activeTab === "home" && (
-        <div className="space-y-4">
-          {posts.map((post, index) => (
+      {/* 포스트 목록 섹션 */}
+      <div className="space-y-4 mb-12">
+        {posts.length > 0 ? (
+          // 포스트가 있는 경우
+          posts.map((post) => (
             <Link
               key={post.postId}
               href={`/main/posts/${post.postId}`}
@@ -109,29 +106,44 @@ export default function KeywordDetailPage() {
                 {/* 콘텐츠 */}
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                    AI로 짜여진 첫번째 키워드에 대한 포스트 제목 {index + 1}
+                    {post.title}
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    AI로 짜여진 첫번째 키워드에 대한 뉴스 내용...
+                    {post.summary}
                   </p>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-500 dark:text-gray-500">
-                      (뉴스 작성 시간 표시)
+                      {post.source}
                     </span>
                     <span className="text-sm text-gray-600 dark:text-gray-400">
-                      2025.04.24 13:00
+                      {post.createdAt}
                     </span>
                   </div>
                 </div>
               </div>
             </Link>
-          ))}
+          ))
+        ) : (
+          // 포스트가 없는 경우 - 간단한 메시지만 표시
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="flex flex-col items-center justify-center py-8">
+              <p className="text-lg text-gray-500 dark:text-gray-400">
+                조회된 포스트가 없습니다.
+              </p>
+              <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
+                다른 키워드로 검색해 보세요.
+              </p>
+            </div>
+          </div>
+        )}
 
-          {/* 페이지네이션 */}
+        {/* 페이지네이션 - 포스트가 있을 때만 표시 */}
+        {posts.length > 0 && (
           <div className="flex justify-center items-center gap-2 mt-8">
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
+              disabled={currentPage === 1}
             >
               <svg
                 className="w-5 h-5"
@@ -155,6 +167,7 @@ export default function KeywordDetailPage() {
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
+              disabled={currentPage === totalPages}
             >
               <svg
                 className="w-5 h-5"
@@ -171,74 +184,64 @@ export default function KeywordDetailPage() {
               </svg>
             </button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* 인기 뉴스 탭 */}
-      {activeTab === "news" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          {Array.from({ length: 5 }).map((_, index) => (
-            <Link
-              key={index}
-              href="#"
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow"
-            >
-              <div className="w-32 h-24 bg-gray-100 dark:bg-gray-700 rounded-lg mx-auto mb-2 relative">
-                <Image
-                  src="/placeholder.jpg"
-                  alt="썸네일"
-                  fill
-                  className="object-cover rounded-lg"
-                />
-              </div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white text-center mb-2">
-                썸네일
-                <br />
-                이미지
-              </p>
-              <p className="text-xs text-gray-700 dark:text-gray-300 mb-2">
-                뉴스 제목
-              </p>
-              <p className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 px-2 py-1 rounded text-center">
-                뉴스 채팅
-              </p>
-            </Link>
-          ))}
-        </div>
-      )}
+      {/* 하단 영역: 연관 뉴스/유튜브 통합 섹션 */}
+      <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          연관 뉴스 / 유튜브
+        </h2>
 
-      {/* 인기 유튜브 탭 */}
-      {activeTab === "youtube" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          {Array.from({ length: 5 }).map((_, index) => (
-            <Link
-              key={index}
-              href="#"
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow"
-            >
-              <div className="w-32 h-24 bg-gray-100 dark:bg-gray-700 rounded-lg mx-auto mb-2 relative">
-                <Image
-                  src="/placeholder.jpg"
-                  alt="썸네일"
-                  fill
-                  className="object-cover rounded-lg"
-                />
-              </div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white text-center mb-2">
-                썸네일
-                <br />
-                이미지
+        {newsItems.length > 0 ? (
+          // 뉴스/유튜브 데이터가 있는 경우
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {newsItems.slice(0, 5).map((news, index) => (
+              <Link
+                key={news.id || index}
+                href={news.url || "#"}
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow"
+              >
+                <div className="w-full h-24 bg-gray-100 dark:bg-gray-700 rounded-lg mb-2 relative flex items-center justify-center">
+                  {news.thumbnailUrl ? (
+                    <Image
+                      src={news.thumbnailUrl}
+                      alt={news.title || "뉴스 썸네일"}
+                      fill
+                      className="object-cover rounded-lg"
+                    />
+                  ) : (
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      썸네일 이미지
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm font-medium text-gray-900 dark:text-white text-center mb-2">
+                  {news.source || "썸네일 이미지"}
+                </p>
+                <p className="text-xs text-gray-700 dark:text-gray-300 mb-2">
+                  {news.title || "뉴스 제목"}
+                </p>
+                <p className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 px-2 py-1 rounded text-center">
+                  뉴스 채팅
+                </p>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          // 뉴스/유튜브 데이터가 없는 경우 - 단일 카드로 처리
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="flex flex-col items-center justify-center py-8">
+              <p className="text-lg text-gray-500 dark:text-gray-400">
+                조회된 뉴스/유튜브가 없습니다.
               </p>
-              <p className="text-xs text-gray-700 dark:text-gray-300 mb-2">
-                유튜브 제목
+              <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
+                관련 컨텐츠를 찾을 수 없습니다.
               </p>
-              <p className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded text-center">
-                유튜브 채팅
-              </p>
-            </Link>
-          ))}
-        </div>
-      )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
