@@ -56,7 +56,7 @@ export default function Home() {
         </h2>
         <div className="space-y-4">
           {posts.slice(0, 5).map((post, index) => (
-            <Link href={`/posts/${post.postId}`} key={post.postId}>
+            <Link href={`main/posts/${post.postId}`} key={post.postId}>
               <PostCard post={post} index={index} />
             </Link>
           ))}
@@ -69,12 +69,6 @@ export default function Home() {
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">
             인기 뉴스
           </h2>
-          <Link
-            href="/news"
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-          >
-            전체보기 버튼
-          </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {news.slice(0, 5).map((newsItem, index) => (
@@ -89,12 +83,6 @@ export default function Home() {
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">
             인기 유튜브
           </h2>
-          <Link
-            href="/videos"
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-          >
-            전체보기 버튼
-          </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {videos.slice(0, 5).map((video, index) => (

@@ -17,4 +17,10 @@ export namespace IPagination {
       hasPrevious: boolean;
     };
   }
+
+  export class OffsetQueryDto {
+    page!: number;
+
+    size!: number;
+  }
 }

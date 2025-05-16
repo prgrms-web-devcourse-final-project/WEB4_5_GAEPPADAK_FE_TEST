@@ -1,3 +1,5 @@
+import { IPagination } from "./common";
+
 export namespace INews {
   export interface ISummary {
     url: string;
@@ -32,4 +34,6 @@ export namespace INews {
       size: number = 10;
     }
   }
+
+  export class GetListQueryDto extends IPagination.OffsetQueryDto {}
 }
