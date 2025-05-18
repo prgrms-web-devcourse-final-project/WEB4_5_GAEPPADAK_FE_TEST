@@ -49,9 +49,13 @@ class AuthService {
 
   async sendEmailAuth(email: string): Promise<void> {
     try {
-      await axiosInstance.post<ApiResponse<void>>("api/v1/auth/verify-email", {
-        params: { email },
-      });
+      await axiosInstance.post<ApiResponse<void>>(
+        "api/v1/auth/verify-email",
+        null,
+        {
+          params: { email },
+        }
+      );
     } catch (e) {
       console.error(e);
       throw e;
