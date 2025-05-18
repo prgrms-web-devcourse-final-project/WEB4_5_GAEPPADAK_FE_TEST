@@ -28,8 +28,7 @@ const SignIn: React.FC = () => {
 
     try {
       setLoading(true);
-      // 비밀번호 해싱은 실제 환경에서는 보안 상의 이유로 서버에서 수행하는 것이 좋습니다.
-      // 이 예시에서는 타입 맞추기 위해 그대로 전달합니다.
+
       const signInDto: IAuth.SignInDto = {
         email,
         passwordHash: password,
