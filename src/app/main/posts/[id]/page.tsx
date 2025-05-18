@@ -5,13 +5,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { postService } from "@src/services/post.service";
-import { IPost } from "@/types";
+import { INews, IPost, IVideo } from "@/types";
 import LoadingSpinner from "@src/components/ui/LoadingSpinner";
 import { commentService } from "@/src/services/comment.service";
 import { IComment } from "@/types/comment";
+import { newsService } from "@/src/services/news.service";
+import { videoService } from "@/src/services/video.service";
 
 export default function PostDetailPage() {
   const params = useParams();
+  const postId = Number(params.id);
   const [post, setPost] = useState<IPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [comment, setComment] = useState("");
@@ -19,26 +22,21 @@ export default function PostDetailPage() {
   const [commentCount, setCommentCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [news, setNews] = useState<INews.ISource.ISummary[]>([]);
+  const [videos, setVideos] = useState<IVideo.ISource.ISummary[]>([]);
 
   useEffect(() => {
     const fetchPost = async () => {
       try {
         setLoading(true);
-        const response = await postService.getDetail(Number(params.id));
+        const response = await postService.getDetail(postId);
         setPost(response.data);
 
-        const { list, meta } = await commentService.getComments(
-          Number(params.id),
-          {
-            page: currentPage,
-            size: 10,
-            sort: "createdAt",
-          }
-        );
+        const { data: videoList } = await videoService.getSourceVideos(postId);
+        setVideos(videoList);
 
-        setComments(list);
-        setCommentCount(meta.totalElements);
-        setTotalPages(meta.totalPages);
+        const { data: newsList } = await newsService.getSourceNews(postId);
+        setNews(newsList);
       } catch (error) {
         console.error("Error fetching post:", error);
       } finally {
@@ -47,7 +45,23 @@ export default function PostDetailPage() {
     };
 
     fetchPost();
-  }, [params.id, currentPage]);
+  }, [postId]);
+
+  useEffect(() => {
+    const fetchComments = async () => {
+      const { list, meta } = await commentService.getComments(postId, {
+        page: currentPage,
+        size: 10,
+        sort: "createdAt",
+      });
+
+      setComments(list);
+      setCommentCount(meta.totalElements);
+      setTotalPages(meta.totalPages);
+    };
+
+    fetchComments();
+  }, [currentPage, postId]);
 
   const handleCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -360,38 +374,95 @@ export default function PostDetailPage() {
       </div>
 
       {/* 뉴스 추천 섹션 */}
-      <div className="mt-8">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          뉴스 추천
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {Array.from({ length: 5 }).map((_, index) => (
-            <Link
-              key={index}
-              href="#"
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow"
-            >
-              <div className="w-32 h-24 bg-gray-100 dark:bg-gray-700 rounded-lg mx-auto mb-2 relative">
-                <Image
-                  src="/placeholder.jpg"
-                  alt="썸네일"
-                  fill
-                  className="object-cover rounded-lg"
-                />
-              </div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white text-center mb-2">
-                썸네일 이미지
-              </p>
-              <p className="text-xs text-gray-700 dark:text-gray-300 mb-2">
-                뉴스 제목
-              </p>
-              <p className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 px-2 py-1 rounded text-center">
-                유튜브 채팅
-              </p>
-            </Link>
-          ))}
+      {news.length > 0 && (
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            뉴스 추천
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {news.map((newsItem) => (
+              <Link
+                key={newsItem.id}
+                href={`/news/${newsItem.id}`}
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow"
+              >
+                <div className="w-full h-24 bg-gray-100 dark:bg-gray-700 rounded-lg mx-auto mb-2 relative">
+                  {newsItem.thumbnailUrl ? (
+                    <Image
+                      src={newsItem.thumbnailUrl}
+                      alt={newsItem.title}
+                      fill
+                      className="object-cover rounded-lg"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-24">
+                        <Image
+                          src="/placeholder.jpg"
+                          alt="썸네일"
+                          width={100}
+                          height={75}
+                          className="object-contain"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <p className="text-sm font-medium text-gray-900 dark:text-white text-center mb-2 line-clamp-2">
+                  {newsItem.title}
+                </p>
+              </Link>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* 유튜브 추천 섹션 */}
+      {videos.length > 0 && (
+        <div className="mt-8 mb-10">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            유튜브 추천
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {videos.map((video) => (
+              <Link
+                key={video.id}
+                href={`/video/${video.id}`}
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow"
+              >
+                <div className="w-full h-24 bg-gray-100 dark:bg-gray-700 rounded-lg mx-auto mb-2 relative">
+                  {video.thumbnailUrl ? (
+                    <Image
+                      src={video.thumbnailUrl}
+                      alt={video.title}
+                      fill
+                      className="object-cover rounded-lg"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-24">
+                        <Image
+                          src="/placeholder.jpg"
+                          alt="썸네일"
+                          width={100}
+                          height={75}
+                          className="object-contain"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <p className="text-sm font-medium text-gray-900 dark:text-white text-center mb-2 line-clamp-2">
+                  {video.title}
+                </p>
+                <p className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 px-2 py-1 rounded text-center">
+                  {video.url}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
