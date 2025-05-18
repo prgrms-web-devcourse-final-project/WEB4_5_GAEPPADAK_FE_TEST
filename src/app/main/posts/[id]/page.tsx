@@ -17,6 +17,7 @@ export default function PostDetailPage() {
   const [loading, setLoading] = useState(true);
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState<IComment[]>([]);
+  const [commentCount, setCommentCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
@@ -36,6 +37,7 @@ export default function PostDetailPage() {
         );
 
         setComments(list);
+        setCommentCount(meta.totalElements);
       } catch (error) {
         console.error("Error fetching post:", error);
       } finally {
@@ -140,7 +142,7 @@ export default function PostDetailPage() {
       {/* 댓글 섹션 */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
-          댓글 (댓글 개수)
+          댓글 ({commentCount}개)
         </h3>
 
         {/* 댓글 입력 폼 */}
