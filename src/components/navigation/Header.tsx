@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import NavTab from "@src/components/ui/NavTab";
+import { memberService } from "@src/services/member.service";
+import { authService } from "@src/services/auth.service";
+import { IMember } from "@/types";
 
 interface HeaderProps {
   initialActiveTab?: string;
@@ -11,11 +14,29 @@ export const Header: React.FC<HeaderProps> = ({
   initialActiveTab = "home",
 }) => {
   const [activeTab, setActiveTab] = useState(initialActiveTab);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userInfo, setUserInfo] = useState<IMember.Me | null>(null);
   const router = useRouter();
   const pathname = usePathname();
 
+  // 사용자 정보 가져오기
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const data = await memberService.getMe();
+        setUserInfo(data);
+        setIsLoggedIn(true);
+      } catch (error) {
+        console.error("사용자 정보를 가져오는데 실패했습니다:", error);
+        setIsLoggedIn(false);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
+
   // 경로에 따라 활성 탭 설정
-  React.useEffect(() => {
+  useEffect(() => {
     if (pathname === "/main") {
       setActiveTab("home");
     } else if (pathname === "/main/popular-news") {
@@ -29,6 +50,18 @@ export const Header: React.FC<HeaderProps> = ({
   const handleTabClick = (tab: string, path: string) => {
     setActiveTab(tab);
     router.push(path);
+  };
+
+  // 로그아웃 처리
+  const handleLogout = async () => {
+    try {
+      await authService.signout();
+      setIsLoggedIn(false);
+      setUserInfo(null);
+      router.push("/main");
+    } catch (error) {
+      console.error("로그아웃 실패:", error);
+    }
   };
 
   return (
@@ -53,16 +86,34 @@ export const Header: React.FC<HeaderProps> = ({
             />
           </nav>
           <div className="flex items-center space-x-3">
-            <Link href="/auth/signup">
-              <button className="px-4 py-2 rounded-full text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
-                회원가입
-              </button>
-            </Link>
-            <Link href="/auth/signin">
-              <button className="px-4 py-2 rounded-full text-sm text-white bg-blue-600 hover:bg-blue-700">
-                로그인
-              </button>
-            </Link>
+            {isLoggedIn ? (
+              <>
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 rounded-full text-sm text-white bg-blue-600 hover:bg-blue-700"
+                >
+                  로그아웃
+                </button>
+                <Link href="/profile">
+                  <div className="flex items-center px-4 py-2 rounded-full text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                    <span>내 프로필</span>
+                  </div>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/auth/signup">
+                  <button className="px-4 py-2 rounded-full text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                    회원가입
+                  </button>
+                </Link>
+                <Link href="/auth/signin">
+                  <button className="px-4 py-2 rounded-full text-sm text-white bg-blue-600 hover:bg-blue-700">
+                    로그인
+                  </button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
