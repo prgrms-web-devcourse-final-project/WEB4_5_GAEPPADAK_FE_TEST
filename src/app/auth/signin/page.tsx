@@ -60,7 +60,7 @@ const SignIn: React.FC = () => {
           <div className="text-center mb-8">
             <div className="mx-auto w-20 h-20 relative mb-4">
               <Image
-                src="/logo.svg"
+                src="/kkokkio.png"
                 alt="로고"
                 layout="fill"
                 objectFit="contain"
