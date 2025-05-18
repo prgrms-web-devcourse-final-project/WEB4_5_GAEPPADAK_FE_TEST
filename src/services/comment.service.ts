@@ -4,12 +4,12 @@ import { IComment } from "@/types/comment";
 import { AxiosResponse } from "axios";
 
 export class CommentService {
-  async getComments(postId: number) {
+  async getComments(postId: number, query: IComment.GetListQueryDto) {
     try {
       const response = await axiosInstance.get<
         ApiResponse<IPagination.IOffset<IComment[]>>
-      >(`/api/v1/posts/${postId}/comments`);
-      return response.data;
+      >(`/api/v1/posts/${postId}/comments`, { params: query });
+      return response.data.data;
     } catch (error) {
       console.error(error);
       throw error;

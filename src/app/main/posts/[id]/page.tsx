@@ -8,27 +8,15 @@ import { useParams } from "next/navigation";
 import { postService } from "@src/services/post.service";
 import { IPost } from "@/types";
 import LoadingSpinner from "@src/components/ui/LoadingSpinner";
-
-interface CommentData {
-  id: number;
-  user: {
-    nickname: string;
-    avatar?: string;
-  };
-  content: string;
-  createdAt: string;
-  reactions: {
-    thumbsUp: number;
-    thumbsDown: number;
-  };
-}
+import { commentService } from "@/src/services/comment.service";
+import { IComment } from "@/types/comment";
 
 export default function PostDetailPage() {
   const params = useParams();
   const [post, setPost] = useState<IPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [comment, setComment] = useState("");
-  const [comments, setComments] = useState<CommentData[]>([]);
+  const [comments, setComments] = useState<IComment[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
@@ -38,30 +26,16 @@ export default function PostDetailPage() {
         const response = await postService.getDetail(Number(params.id));
         setPost(response.data);
 
-        // 임시 댓글 데이터
-        setComments([
+        const { list, meta } = await commentService.getComments(
+          Number(params.id),
           {
-            id: 1,
-            user: { nickname: "사용자 닉네임1", avatar: "/placeholder.jpg" },
-            content: "댓글 내용",
-            createdAt: "5분전",
-            reactions: { thumbsUp: 3, thumbsDown: 0 },
-          },
-          {
-            id: 2,
-            user: { nickname: "사용자 닉네임2", avatar: "/placeholder.jpg" },
-            content: "댓글 내용",
-            createdAt: "10분전",
-            reactions: { thumbsUp: 1, thumbsDown: 0 },
-          },
-          {
-            id: 3,
-            user: { nickname: "사용자 닉네임3", avatar: "/placeholder.jpg" },
-            content: "댓글 내용",
-            createdAt: "15분전",
-            reactions: { thumbsUp: 0, thumbsDown: 0 },
-          },
-        ]);
+            page: currentPage,
+            size: 10,
+            sort: "createdAt",
+          }
+        );
+
+        setComments(list);
       } catch (error) {
         console.error("Error fetching post:", error);
       } finally {
@@ -191,12 +165,12 @@ export default function PostDetailPage() {
         {/* 댓글 목록 */}
         <div className="space-y-6">
           {comments.map((comment) => (
-            <div key={comment.id} className="flex gap-4">
+            <div key={comment.commentId} className="flex gap-4">
               <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-gray-700">
-                {comment.user.avatar && (
+                {comment.profileUrl && (
                   <Image
-                    src={comment.user.avatar}
-                    alt={comment.user.nickname}
+                    src={comment.profileUrl}
+                    alt={comment.nickname}
                     width={40}
                     height={40}
                     className="object-cover"
@@ -206,20 +180,16 @@ export default function PostDetailPage() {
               <div className="flex-1">
                 <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
                   <p className="font-medium text-gray-900 dark:text-white mb-1">
-                    {comment.user.nickname}
+                    {comment.nickname}
                   </p>
                   <p className="text-gray-700 dark:text-gray-300">
-                    {comment.content}
+                    {comment.body}
                   </p>
                 </div>
                 <div className="flex items-center gap-4 mt-2">
                   <button className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
                     추천
-                    {comment.reactions.thumbsUp}
-                  </button>
-                  <button className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                    반대
-                    {comment.reactions.thumbsDown}
+                    {comment.likeCount}
                   </button>
                   <span className="text-sm text-gray-500 dark:text-gray-400">
                     {comment.createdAt}
