@@ -93,8 +93,8 @@ function EmailVerificationForm() {
 
       // 성공 시 다음 페이지로 이동 (필요에 따라 변경)
       setTimeout(() => {
-        router.push("/login"); // 또는 다음 단계로 이동
-      }, 2000);
+        router.push("/signin"); // 또는 다음 단계로 이동
+      }, 1000);
     } catch (error) {
       if (error instanceof AxiosError) {
         setError(error.response?.data.message);
