@@ -63,12 +63,26 @@ export default function PostDetailPage() {
     fetchComments();
   }, [currentPage, postId]);
 
-  const handleCommentSubmit = (e: React.FormEvent) => {
+  const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!comment.trim()) return;
 
-    // 댓글 제출 로직 (API 연동 예정)
-    setComment("");
+    try {
+      await commentService.createComment(postId, comment);
+      setComment("");
+      // 댓글 목록 새로고침
+      const { list, meta } = await commentService.getComments(postId, {
+        page: currentPage,
+        size: 10,
+        sort: "createdAt",
+      });
+      setComments(list);
+      setCommentCount(meta.totalElements);
+      setTotalPages(meta.totalPages);
+    } catch (error) {
+      console.error("Error creating comment:", error);
+      alert("댓글 작성에 실패했습니다. 다시 시도해주세요.");
+    }
   };
 
   // 페이지네이션 렌더링 함수
