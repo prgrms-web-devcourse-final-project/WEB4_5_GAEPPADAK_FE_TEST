@@ -2,7 +2,7 @@
 
 // pages/auth/signup.tsx
 import Head from "next/head";
-import SignupForm from "@/components/SignupForm";
+import SignupForm from "@src/components/SignupForm";
 
 export default function Signup() {
   return (
