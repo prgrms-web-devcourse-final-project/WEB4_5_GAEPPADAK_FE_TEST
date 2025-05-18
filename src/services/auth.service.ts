@@ -6,7 +6,7 @@ class AuthService {
   async signup(signupDto: IAuth.SignUpDto): Promise<IAuth.SignUpResponse> {
     const response = await axiosInstance.post<IAuth.SignUpResponse>(
       "api/v1/member/signup",
-      signupDto,
+      signupDto
     );
     try {
       return response.data;
@@ -19,7 +19,7 @@ class AuthService {
   async signin(signinDto: IAuth.SignInDto): Promise<IAuth.SignInResponse> {
     const response = await axiosInstance.post<IAuth.SignInResponse>(
       "api/v1/auth/login",
-      signinDto,
+      signinDto
     );
     try {
       return response.data;
@@ -47,9 +47,11 @@ class AuthService {
     }
   }
 
-  async sendEmailAuth(): Promise<void> {
+  async sendEmailAuth(email: string): Promise<void> {
     try {
-      await axiosInstance.post<ApiResponse<void>>("api/v1/verify-email");
+      await axiosInstance.post<ApiResponse<void>>("api/v1/auth/verify-email", {
+        params: { email },
+      });
     } catch (e) {
       console.error(e);
       throw e;
@@ -62,7 +64,7 @@ class AuthService {
         ApiResponse<void>,
         AxiosResponse<ApiResponse<void>>,
         IAuth.CheckEmailDto
-      >("api/v1/check-email", body);
+      >("api/v1/auth/check-email", body);
     } catch (e) {
       console.error(e);
       throw e;

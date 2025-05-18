@@ -106,6 +106,14 @@ function EmailVerificationForm() {
     }
   };
 
+  useEffect(() => {
+    const verifyEmail = async () => {
+      console.log(email);
+      await authService.sendEmailAuth(email);
+    };
+    verifyEmail();
+  }, []);
+
   return (
     <div className="p-8 bg-white rounded-lg shadow-md w-80 text-center border border-gray-200">
       <h2 className="text-lg font-bold mb-6 text-gray-800">인증 코드 입력</h2>
