@@ -2,6 +2,8 @@ import { IPagination } from "./common";
 
 export namespace INews {
   export interface ISummary {
+    newsId: number;
+
     url: string;
 
     title: string;
@@ -11,6 +13,8 @@ export namespace INews {
     publishedAt: string;
 
     platform: string;
+
+    summary: string;
   }
 
   export namespace ISource {
@@ -24,6 +28,8 @@ export namespace INews {
       title: string;
 
       platform: "YOUTUBE" | "NAVER_NEWS";
+
+      source: string;
     }
 
     export class GetMixedListQueryDto {
