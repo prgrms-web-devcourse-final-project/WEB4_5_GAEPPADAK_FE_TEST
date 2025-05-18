@@ -35,16 +35,9 @@ const SignIn: React.FC = () => {
         passwordHash: password,
       };
 
-      const response = await authService.signin(signInDto);
+      await authService.signin(signInDto);
 
-      if (response && response.code === "SUCCESS") {
-        // 로그인 성공 시 로컬 스토리지에 사용자 정보 저장 또는 상태 관리 라이브러리 업데이트
-        localStorage.setItem("user", JSON.stringify(response.data));
-        // 로그인 성공 후 리다이렉트
-        router.push("/dashboard");
-      } else {
-        setError(response.message || "로그인에 실패했습니다.");
-      }
+      router.push("/main");
     } catch (err) {
       setError("로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.");
       console.error(err);
