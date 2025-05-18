@@ -1,4 +1,3 @@
-// app/(main)/posts/[id]/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -6,62 +5,38 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { postService } from "@src/services/post.service";
-import { IPost } from "@/types";
+import { INews, IPost, IVideo } from "@/types";
 import LoadingSpinner from "@src/components/ui/LoadingSpinner";
-
-interface CommentData {
-  id: number;
-  user: {
-    nickname: string;
-    avatar?: string;
-  };
-  content: string;
-  createdAt: string;
-  reactions: {
-    thumbsUp: number;
-    thumbsDown: number;
-  };
-}
+import { commentService } from "@/src/services/comment.service";
+import { IComment } from "@/types/comment";
+import { newsService } from "@/src/services/news.service";
+import { videoService } from "@/src/services/video.service";
 
 export default function PostDetailPage() {
   const params = useParams();
+  const postId = Number(params.id);
   const [post, setPost] = useState<IPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [comment, setComment] = useState("");
-  const [comments, setComments] = useState<CommentData[]>([]);
+  const [comments, setComments] = useState<IComment[]>([]);
+  const [commentCount, setCommentCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [news, setNews] = useState<INews.ISource.ISummary[]>([]);
+  const [videos, setVideos] = useState<IVideo.ISource.ISummary[]>([]);
 
   useEffect(() => {
     const fetchPost = async () => {
       try {
         setLoading(true);
-        const response = await postService.getDetail(Number(params.id));
+        const response = await postService.getDetail(postId);
         setPost(response.data);
 
-        // 임시 댓글 데이터
-        setComments([
-          {
-            id: 1,
-            user: { nickname: "사용자 닉네임1", avatar: "/placeholder.jpg" },
-            content: "댓글 내용",
-            createdAt: "5분전",
-            reactions: { thumbsUp: 3, thumbsDown: 0 },
-          },
-          {
-            id: 2,
-            user: { nickname: "사용자 닉네임2", avatar: "/placeholder.jpg" },
-            content: "댓글 내용",
-            createdAt: "10분전",
-            reactions: { thumbsUp: 1, thumbsDown: 0 },
-          },
-          {
-            id: 3,
-            user: { nickname: "사용자 닉네임3", avatar: "/placeholder.jpg" },
-            content: "댓글 내용",
-            createdAt: "15분전",
-            reactions: { thumbsUp: 0, thumbsDown: 0 },
-          },
-        ]);
+        const { data: videoList } = await videoService.getSourceVideos(postId);
+        setVideos(videoList);
+
+        const { data: newsList } = await newsService.getSourceNews(postId);
+        setNews(newsList);
       } catch (error) {
         console.error("Error fetching post:", error);
       } finally {
@@ -70,14 +45,138 @@ export default function PostDetailPage() {
     };
 
     fetchPost();
-  }, [params.id]);
+  }, [postId]);
 
-  const handleCommentSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const fetchComments = async () => {
+      const { list, meta } = await commentService.getComments(postId, {
+        page: currentPage,
+        size: 10,
+        sort: "createdAt",
+      });
+
+      setComments(list);
+      setCommentCount(meta.totalElements);
+      setTotalPages(meta.totalPages);
+    };
+
+    fetchComments();
+  }, [currentPage, postId]);
+
+  const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!comment.trim()) return;
 
-    // 댓글 제출 로직 (API 연동 예정)
-    setComment("");
+    try {
+      await commentService.createComment(postId, comment);
+      setComment("");
+      // 댓글 목록 새로고침
+      const { list, meta } = await commentService.getComments(postId, {
+        page: currentPage,
+        size: 10,
+        sort: "createdAt",
+      });
+      setComments(list);
+      setCommentCount(meta.totalElements);
+      setTotalPages(meta.totalPages);
+    } catch (error) {
+      console.error("Error creating comment:", error);
+      alert("댓글 작성에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
+
+  // 페이지네이션 렌더링 함수
+  const renderPagination = () => {
+    const pages = [];
+
+    // 전체 페이지가 5개 이하인 경우, 모든 페이지 번호 표시
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(
+          <button
+            key={i}
+            onClick={() => setCurrentPage(i)}
+            className={`px-3 py-1 rounded-md ${
+              currentPage === i
+                ? "bg-blue-500 text-white"
+                : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+            }`}
+          >
+            {i}
+          </button>
+        );
+      }
+    } else {
+      // 처음 페이지 버튼
+      if (currentPage > 3) {
+        pages.push(
+          <button
+            key={1}
+            onClick={() => setCurrentPage(1)}
+            className="px-3 py-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+          >
+            1
+          </button>
+        );
+
+        // 중간에 생략 표시
+        if (currentPage > 4) {
+          pages.push(
+            <span key="ellipsis1" className="px-2 text-gray-500">
+              ...
+            </span>
+          );
+        }
+      }
+
+      // 현재 페이지 주변 표시
+      const startPage = Math.max(2, currentPage - 1);
+      const endPage = Math.min(totalPages - 1, currentPage + 1);
+
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(
+          <button
+            key={i}
+            onClick={() => setCurrentPage(i)}
+            className={`px-3 py-1 rounded-md ${
+              currentPage === i
+                ? "bg-blue-500 text-white"
+                : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+            }`}
+          >
+            {i}
+          </button>
+        );
+      }
+
+      // 중간에 생략 표시
+      if (currentPage < totalPages - 3) {
+        pages.push(
+          <span key="ellipsis2" className="px-2 text-gray-500">
+            ...
+          </span>
+        );
+      }
+
+      // 마지막 페이지 버튼
+      if (currentPage < totalPages - 1) {
+        pages.push(
+          <button
+            key={totalPages}
+            onClick={() => setCurrentPage(totalPages)}
+            className={`px-3 py-1 rounded-md ${
+              currentPage === totalPages
+                ? "bg-blue-500 text-white"
+                : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+            }`}
+          >
+            {totalPages}
+          </button>
+        );
+      }
+    }
+
+    return pages;
   };
 
   if (loading) {
@@ -166,7 +265,7 @@ export default function PostDetailPage() {
       {/* 댓글 섹션 */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
-          댓글 (댓글 개수)
+          댓글 ({commentCount}개)
         </h3>
 
         {/* 댓글 입력 폼 */}
@@ -190,123 +289,191 @@ export default function PostDetailPage() {
 
         {/* 댓글 목록 */}
         <div className="space-y-6">
-          {comments.map((comment) => (
-            <div key={comment.id} className="flex gap-4">
-              <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-gray-700">
-                {comment.user.avatar && (
-                  <Image
-                    src={comment.user.avatar}
-                    alt={comment.user.nickname}
-                    width={40}
-                    height={40}
-                    className="object-cover"
-                  />
-                )}
-              </div>
-              <div className="flex-1">
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                  <p className="font-medium text-gray-900 dark:text-white mb-1">
-                    {comment.user.nickname}
-                  </p>
-                  <p className="text-gray-700 dark:text-gray-300">
-                    {comment.content}
-                  </p>
+          {comments.length > 0 ? (
+            comments.map((comment) => (
+              <div key={comment.commentId} className="flex gap-4">
+                <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-gray-700">
+                  {comment.profileUrl && (
+                    <Image
+                      src={comment.profileUrl}
+                      alt={comment.nickname}
+                      width={40}
+                      height={40}
+                      className="object-cover"
+                    />
+                  )}
                 </div>
-                <div className="flex items-center gap-4 mt-2">
-                  <button className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                    추천
-                    {comment.reactions.thumbsUp}
-                  </button>
-                  <button className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                    반대
-                    {comment.reactions.thumbsDown}
-                  </button>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    {comment.createdAt}
-                  </span>
+                <div className="flex-1">
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                    <p className="font-medium text-gray-900 dark:text-white mb-1">
+                      {comment.nickname}
+                    </p>
+                    <p className="text-gray-700 dark:text-gray-300">
+                      {comment.body}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4 mt-2">
+                    <button className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                      추천
+                      {comment.likeCount}
+                    </button>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      {comment.createdAt}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p className="text-center text-gray-500 dark:text-gray-400 py-4">
+              댓글이 없습니다. 첫 댓글을 작성해보세요!
+            </p>
+          )}
         </div>
 
         {/* 페이지네이션 */}
-        <div className="flex justify-center items-center gap-2 mt-8">
-          <button
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            <svg
-              className="w-5 h-5 text-gray-600 dark:text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+        {totalPages > 0 && (
+          <div className="flex justify-center items-center gap-2 mt-8">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className={`p-2 rounded-md ${
+                currentPage === 1
+                  ? "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+                  : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
+              }`}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-          </button>
-          <span className="mx-2 text-gray-700 dark:text-gray-300">
-            {currentPage} | 2 | 3 | 4
-          </span>
-          <button
-            onClick={() => setCurrentPage((p) => p + 1)}
-            className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            <svg
-              className="w-5 h-5 text-gray-600 dark:text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </button>
+
+            <div className="flex items-center">{renderPagination()}</div>
+
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className={`p-2 rounded-md ${
+                currentPage === totalPages
+                  ? "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+                  : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
+              }`}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </button>
-        </div>
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 뉴스 추천 섹션 */}
-      <div className="mt-8">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          뉴스 추천
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {Array.from({ length: 5 }).map((_, index) => (
-            <Link
-              key={index}
-              href="#"
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow"
-            >
-              <div className="w-32 h-24 bg-gray-100 dark:bg-gray-700 rounded-lg mx-auto mb-2 relative">
-                <Image
-                  src="/placeholder.jpg"
-                  alt="썸네일"
-                  fill
-                  className="object-cover rounded-lg"
-                />
-              </div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white text-center mb-2">
-                썸네일 이미지
-              </p>
-              <p className="text-xs text-gray-700 dark:text-gray-300 mb-2">
-                뉴스 제목
-              </p>
-              <p className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 px-2 py-1 rounded text-center">
-                유튜브 채팅
-              </p>
-            </Link>
-          ))}
+      {news.length > 0 && (
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            뉴스 추천
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {news.map((newsItem) => (
+              <Link
+                key={newsItem.id}
+                href={`/news/${newsItem.id}`}
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow"
+              >
+                <div className="w-full h-24 bg-gray-100 dark:bg-gray-700 rounded-lg mx-auto mb-2 relative">
+                  {newsItem.thumbnailUrl ? (
+                    <Image
+                      src={newsItem.thumbnailUrl}
+                      alt={newsItem.title}
+                      fill
+                      className="object-cover rounded-lg"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-24">
+                        <Image
+                          src="/placeholder.jpg"
+                          alt="썸네일"
+                          width={100}
+                          height={75}
+                          className="object-contain"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <p className="text-sm font-medium text-gray-900 dark:text-white text-center mb-2 line-clamp-2">
+                  {newsItem.title}
+                </p>
+              </Link>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* 유튜브 추천 섹션 */}
+      {videos.length > 0 && (
+        <div className="mt-8 mb-10">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            유튜브 추천
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {videos.map((video) => (
+              <Link
+                key={video.id}
+                href={video.url}
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow"
+              >
+                <div className="w-full h-24 bg-gray-100 dark:bg-gray-700 rounded-lg mx-auto mb-2 relative">
+                  {video.thumbnailUrl ? (
+                    <Image
+                      src={video.thumbnailUrl}
+                      alt={video.title}
+                      fill
+                      className="object-cover rounded-lg"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-24">
+                        <Image
+                          src="/placeholder.jpg"
+                          alt="썸네일"
+                          width={100}
+                          height={75}
+                          className="object-contain"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <p className="text-sm font-medium text-gray-900 dark:text-white text-center mb-2 line-clamp-2">
+                  {video.title}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
