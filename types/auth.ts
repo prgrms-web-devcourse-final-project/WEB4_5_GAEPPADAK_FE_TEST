@@ -48,4 +48,10 @@ export namespace IAuth {
       role: string;
     };
   }
+
+  export class CheckEmailDto {
+    email!: string;
+
+    authCode!: string;
+  }
 }

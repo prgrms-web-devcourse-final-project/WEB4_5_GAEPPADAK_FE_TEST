@@ -2,6 +2,8 @@ import { IPagination } from "./common";
 
 export namespace IVideo {
   export interface ISummary {
+    videoId: number;
+
     url: string;
 
     title: string;

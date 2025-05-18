@@ -9,7 +9,11 @@ export namespace IPost {
     thumbnailUrl: string;
   }
 
-  export interface ISummary extends IBase {}
+  export interface ISummary extends IBase {
+    source: string;
+
+    createdAt: string;
+  }
 
   export class GetListQueryDto {
     keyword!: string;
