@@ -28,23 +28,15 @@ const SignIn: React.FC = () => {
 
     try {
       setLoading(true);
-      // 비밀번호 해싱은 실제 환경에서는 보안 상의 이유로 서버에서 수행하는 것이 좋습니다.
-      // 이 예시에서는 타입 맞추기 위해 그대로 전달합니다.
+
       const signInDto: IAuth.SignInDto = {
         email,
         passwordHash: password,
       };
 
-      const response = await authService.signin(signInDto);
+      await authService.signin(signInDto);
 
-      if (response && response.code === "SUCCESS") {
-        // 로그인 성공 시 로컬 스토리지에 사용자 정보 저장 또는 상태 관리 라이브러리 업데이트
-        localStorage.setItem("user", JSON.stringify(response.data));
-        // 로그인 성공 후 리다이렉트
-        router.push("/dashboard");
-      } else {
-        setError(response.message || "로그인에 실패했습니다.");
-      }
+      router.push("/main");
     } catch (err) {
       setError("로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.");
       console.error(err);
